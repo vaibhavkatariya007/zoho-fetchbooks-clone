@@ -1,82 +1,42 @@
 import React, { Component } from 'react';
+import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
+import './App.css';
 
 class App extends Component {
   constructor(props){
     super(props);
     this.state = {
-      list:[],
-      filterList:[],
-      user_error:false
+      contact_list:[]
+    };
   }
-    this.onChangeHandler = this.onChangeHandler.bind(this);
-  }
-  
+
+
   componentDidMount(){
-    let that = this;
-    fetch('https://reqres.in/api/users?page=1&per_page=100').then(function(response) {
-    return response.json();
-  }).then(function(returnedValue) {
-    let userData = returnedValue.data;
-    let Arr = [];
-    userData && userData.map((item)=>{
-      Arr.push(item.first_name + ' ' + item.last_name);
-    });
-    that.setState({
-      list:Arr,
-      filterList:Arr
-    });
-  }).catch(function(err) {
-    // Error :(
-      if(err){
-        that.setState({
-          user_error:true
+    let url = 'https://books.zoho.com/api/v3/contacts?organization_id=669978070';
+    let headers = new Headers();
+    headers.append('Authorization', 'Zoho-authtoken db36e02a50b57e081efe533a8a0f834b');
+
+    fetch(url, {method:'GET',headers: headers})
+      .then(response => response.json())
+      .then((json) => {
+        this.setState({
+          contact_list:json.contacts
         });
-      }
-  });
+      });
+    
   }
 
-  searchStringInArray (str, strArray) {
-    if(str){
-      let filterArray = [];
-      for (var j=0; j<strArray.length; j++) {
-        if (strArray[j].toLowerCase().includes(str)) {
-          filterArray =  filterArray.concat(strArray[j]);
-        }
-    }
-    return filterArray;
-    }
-  }
-  onChangeHandler(){
-    let filteredList  = '';
-    let {list} = this.state;
-    let usersearch = this.userSearch.value.toLowerCase();
-    if(usersearch !== ''){
-      filteredList = this.searchStringInArray(usersearch, list);
-      this.setState({
-        filterList:filteredList
-      });
-    }else{
-      this.setState({
-        filterList:list
-      });
-    }
-  }
-  
   render() {
-    let {filterList} = this.state;
+    let {contact_list} = this.state;
     return (
-      <div className="App">
-      <div>
-        <input type="text" ref={(ref)=> {this.userSearch = ref} } onChange={this.onChangeHandler}/>
-      </div>
-
-      <ol>
-        {
-        filterList &&  filterList.map((user, idx) => {
-            return ( <li key={idx}>{user}</li> );
-          })
-        }
-        </ol>
+      <div className="app" style={{'width':'90%', 'margin':'0 auto'}}>
+        <h3 style={{'color':'#2c76a2'}}>Contact List</h3>
+        <BootstrapTable data={contact_list} striped hover>
+          <TableHeaderColumn isKey dataField='contact_name' dataSort={ true }>Name</TableHeaderColumn>
+          <TableHeaderColumn dataField='email'>Email</TableHeaderColumn>
+          <TableHeaderColumn dataField='phone'>Phone</TableHeaderColumn>
+          <TableHeaderColumn dataField='status'>Status</TableHeaderColumn>
+        </BootstrapTable>
       </div>
     );
   }
